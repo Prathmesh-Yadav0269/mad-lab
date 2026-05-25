@@ -1,0 +1,284 @@
+Step 1 : 
+
+Open XAMPP Control Panel.
+
+Start:
+
+Apache
+MySQL
+
+
+Step 2 :
+
+Open Chrome:
+
+http://localhost/phpmyadmin
+
+Click New.
+
+Database name:
+
+flutter_db
+
+Click Create.  
+
+
+ step 3 :
+
+ Click database:
+
+flutter_db
+
+Click SQL.
+
+Paste:
+
+CREATE TABLE users (
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ name VARCHAR(100),
+ email VARCHAR(100),
+ mobile VARCHAR(15)
+);
+
+Click Go. 
+
+
+
+ Step 4:
+
+ Go to:
+
+C:\xampp\htdocs
+
+Create folder:
+
+flutter_api
+
+Inside it create file:
+
+insert.php
+
+Paste this full PHP code:
+
+<?php
+header("Access-Control-Allow-Origin: *");
+
+$connection = new mysqli("localhost", "root", "", "flutter_db");
+
+if ($connection->connect_error) {
+    die("Connection Failed");
+}
+
+$name = $_POST['name'] ?? '';
+$email = $_POST['email'] ?? '';
+$mobile = $_POST['mobile'] ?? '';
+
+$sql = "INSERT INTO users (name, email, mobile)
+VALUES ('$name', '$email', '$mobile')";
+
+if ($connection->query($sql) === TRUE) {
+    echo "Success";
+} else {
+    echo "Error";
+}
+?>
+
+Save it  
+
+
+
+Step 5 :
+Open Chrome:
+
+http://localhost/flutter_api/insert.php
+
+It may show blank page or Success. That is okay. 
+
+
+
+
+Step 6 :
+
+Open CMD:
+
+
+flutter create mysql_insert_app
+cd mysql_insert_app
+code .  
+
+
+
+Step 7 :
+
+Open:
+
+pubspec.yaml
+
+In dependencies, write:
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^0.13.6
+
+Save.
+
+Then run:
+
+flutter pub get
+
+
+
+Step 8 :
+
+Open:
+
+android/app/src/main/AndroidManifest.xml
+
+Add this line above <application>:
+
+<uses-permission android:name="android.permission.INTERNET"/>
+
+Example:
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <application
+
+
+
+
+step 9 : 
+
+Open:
+
+lib/main.dart
+
+Delete all code and paste:
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: InsertPage(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+class InsertPage extends StatefulWidget {
+  @override
+  _InsertPageState createState() => _InsertPageState();
+}
+
+class _InsertPageState extends State<InsertPage> {
+  TextEditingController nameController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController mobileController = TextEditingController();
+
+  Future<void> insertData() async {
+    var url = Uri.parse("http://localhost/flutter_api/insert.php");
+
+    var response = await http.post(url, body: {
+      "name": nameController.text,
+      "email": emailController.text,
+      "mobile": mobileController.text,
+    });
+
+    if (response.body.trim() == "Success") {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Data Inserted Successfully")),
+      );
+
+      nameController.clear();
+      emailController.clear();
+      mobileController.clear();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error Occurred")),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("MySQL Insert"),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(labelText: "Name"),
+            ),
+            TextField(
+              controller: emailController,
+              decoration: InputDecoration(labelText: "Email"),
+            ),
+            TextField(
+              controller: mobileController,
+              decoration: InputDecoration(labelText: "Mobile"),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: insertData,
+              child: Text("Insert Data"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+
+
+step 10 :
+
+Run:
+
+flutter run 
+
+Enter:
+
+Name: Sakshi
+Email: sakshi@gmail.com
+Mobile: 9876543210
+
+Click Insert Data.
+
+
+
+step 11 :
+
+pen:
+
+http://localhost/phpmyadmin
+
+Go to:
+
+flutter_db → users → Browse
+
+Your data should be inserted there.
+
+For Chrome, use:
+
+http://localhost/flutter_api/insert.php
+
+For Android Emulator, use:
+
+http://10.0.2.2/flutter_api/insert.php
+
+
