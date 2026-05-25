@@ -1,0 +1,211 @@
+step 1 :
+
+Open XAMPP Control Panel.
+
+Start:
+
+Apache
+MySQL
+
+Both should be green. 
+
+step 2 :
+
+Open Chrome and type:
+
+http://localhost/phpmyadmin
+
+
+Step 3 :
+
+click on NEW
+Your database name is:
+flutter_db
+click CREATE
+
+
+step 4 :
+Click SQL tab and paste:
+
+CREATE TABLE users (
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ name VARCHAR(100),
+ email VARCHAR(100),
+ mobile VARCHAR(15)
+);
+
+Click Go.
+
+
+step 5 :
+
+Click SQL tab and paste:
+
+INSERT INTO users (name, email, mobile) VALUES
+('Shrikant', 'shrikant@gmail.com', '9876543210'),
+('Rahul', 'rahul@gmail.com', '9123456780'),
+('Priya', 'priya@gmail.com', '9988776655');
+
+Click Go.
+
+Then click Browse. You should see data.
+
+step 6 :
+Go to:
+
+C:\xampp\htdocs\flutter_api
+
+Create file:
+
+fetch.php
+
+Paste this code:
+
+<?php
+header("Access-Control-Allow-Origin: *");
+header("Content-Type: application/json");
+
+$connection = new mysqli("localhost", "root", "", "flutter_db1");
+
+$sql = "SELECT * FROM users";
+$result = $connection->query($sql);
+
+$data = array();
+
+while($row = $result->fetch_assoc()){
+    $data[] = $row;
+}
+
+echo json_encode($data);
+?>
+
+Save it. 
+
+
+
+Step 7 :
+
+Open Chrome:
+
+http://localhost/flutter_api/fetch.php
+
+You should see JSON like:
+
+[{"id":"1","name":"Shrikant","email":"shrikant@gmail.com","mobile":"9876543210"}]
+
+
+step 8 :
+
+Open CMD:
+
+
+flutter create fetch_mysql_app
+cd fetch_mysql_app
+code . 
+
+step 9 :
+
+Open pubspec.yaml.
+
+Add:
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^0.13.6
+
+Save.
+
+Then run:
+
+flutter pub get 
+
+step 10 :
+
+Open:
+
+android/app/src/main/AndroidManifest.xml
+
+Add above <application>:
+
+<uses-permission android:name="android.permission.INTERNET"/> 
+
+step 11 :
+Open:
+
+lib/main.dart
+
+Delete all code and paste:
+
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: FetchPage(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+class FetchPage extends StatefulWidget {
+  @override
+  _FetchPageState createState() => _FetchPageState();
+}
+
+class _FetchPageState extends State<FetchPage> {
+  List users = [];
+
+  Future<void> fetchData() async {
+    var url = Uri.parse("http://localhost/flutter_api/fetch.php");
+
+    var response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      setState(() {
+        users = json.decode(response.body);
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Fetch Data"),
+      ),
+      body: users.isEmpty
+          ? Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: users.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  margin: EdgeInsets.all(10),
+                  child: ListTile(
+                    title: Text(users[index]['name']),
+                    subtitle: Text(users[index]['email']),
+                    trailing: Text(users[index]['mobile']),
+                  ),
+                );
+              },
+            ),
+    );
+  }
+}
+
+Step 12 :
+flutter run 
+
